@@ -1,22 +1,83 @@
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+// model User {
+//   id         Int      @id @default(autoincrement()) // Primary key, auto-increments for each user
+//   name       String? // Optional field for user's name
+//   email      String   @unique // Unique email address for each user
+//   password   String? // Optional field for user's password
+//   created_at DateTime @default(now()) // Timestamp for when the user was created, defaults to now
+// }
+
+//*********************************
+
+// * adv-crud prisma-express-postgres v2
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// Configuration for generating the Prisma Client
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js" // Specifies the client generator
+  previewFeatures = ["fullTextSearch"] // Enables experimental features
 }
 
+// Configuration for the data source
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // Specifies PostgreSQL as the database provider
+  url      = env("DATABASE_URL") // Database connection string from environment variable
 }
 
+// Enum for user roles
+enum Role {
+  USER // Default role for a new user
+  STUDENT // Role for students
+  TEACHER // Role for teachers
+  ADMIN // Role for administrators
+}
+
+// User model definition
 model User {
-  id         Int      @id @default(autoincrement()) // Primary key, auto-increments for each user
-  name       String? // Optional field for user's name
-  email      String   @unique // Unique email address for each user
-  password   String? // Optional field for user's password
-  created_at DateTime @default(now()) // Timestamp for when the user was created, defaults to now
+  id         Int       @id @default(autoincrement()) // Unique identifier, auto-incremented
+  name       String? // Optional name field
+  email      String    @unique // Unique email address for each user
+  password   String? // Optional password field
+  role       Role      @default(USER) // Default role for new users
+  posts      Post[] // One-to-many relationship with Post
+  comments   Comment[] // One-to-many relationship with Comment
+  created_at DateTime  @default(now()) // Timestamp for creation, defaulting to current time
+}
+
+// Post model definition
+model Post {
+  id            Int       @id @default(autoincrement()) // Unique identifier, auto-incremented
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+  comment       Comment[] // One-to-many relationship with Comment
+  user_id       Int // Foreign key referencing User
+  title         String // Title of the post
+  description   String // Content of the post
+  comment_count Int       @default(0) // Counter for the number of comments, default is 0
+  created_at    DateTime  @default(now()) // Timestamp for creation, defaulting to current time
+}
+
+// Comment model definition
+model Comment {
+  id         String   @id @default(uuid()) // Unique identifier, using UUID
+  post       Post     @relation(fields: [post_id], references: [id], onDelete: Cascade) // Many-to-one relationship with Post
+  post_id    Int // Foreign key referencing Post
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+  user_id    Int // Foreign key referencing User
+  comment    String // Text content of the comment
+  created_at DateTime @default(now()) // Timestamp for creation, defaulting to current time
 }
