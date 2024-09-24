@@ -1,4 +1,4 @@
-import prisma from "../../../DB/db.config.js"; // .js extension is important
+import prisma from "../../../DB/db.config.js";
 
 export const fetchComments = async (req, res) => {
   const comments = await prisma.comment.findMany({
@@ -49,7 +49,8 @@ export const showComment = async (req, res) => {
   const commentId = req.params.id;
   const post = await prisma.comment.findFirst({
     where: {
-      id: Number(commentId),
+      // id: Number(commentId),
+      id: commentId,
     },
   });
 
@@ -58,12 +59,23 @@ export const showComment = async (req, res) => {
 
 // * Delete user
 export const deleteComment = async (req, res) => {
-  const commentId = req.params.id;
+  const commentId = req.params.id; // used uuid
 
-  //   * Increase the comment counter
+  // find if comment exits or not
+  const comment = await prisma.comment.findFirst({
+    where: {
+      id: commentId, // used uuid
+    },
+  });
+
+  if (!comment) {
+    return res.json({ status: 404, msg: "Comment not found" });
+  }
+
+  //   * decrease the comment counter
   await prisma.post.update({
     where: {
-      id: Number(post_id),
+      id: Number(comment?.post_id),
     },
     data: {
       comment_count: {
@@ -73,9 +85,9 @@ export const deleteComment = async (req, res) => {
   });
   await prisma.comment.delete({
     where: {
-      id: Number(commentId),
+      id: commentId, // used uuid
     },
   });
 
-  return res.json({ status: 200, msg: "Post deleted successfully" });
+  return res.json({ status: 200, msg: "comment deleted successfully" });
 };

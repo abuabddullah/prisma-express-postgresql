@@ -57,12 +57,14 @@ model User {
   posts      Post[] // One-to-many relationship with Post
   comments   Comment[] // One-to-many relationship with Comment
   created_at DateTime  @default(now()) // Timestamp for creation, defaulting to current time
+  Student    Student[]
+  Course     Course[]
 }
 
 // Post model definition
 model Post {
   id            Int       @id @default(autoincrement()) // Unique identifier, auto-incremented
-  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one {onDelete: Cascade} ensures if user is deleted his comments,posts,student,courses all are removedrelationship with User
   comment       Comment[] // One-to-many relationship with Comment
   user_id       Int // Foreign key referencing User
   title         String // Title of the post
@@ -74,10 +76,27 @@ model Post {
 // Comment model definition
 model Comment {
   id         String   @id @default(uuid()) // Unique identifier, using UUID
-  post       Post     @relation(fields: [post_id], references: [id], onDelete: Cascade) // Many-to-one relationship with Post
+  post       Post     @relation(fields: [post_id], references: [id], onDelete: Cascade) // Many-to-one {onDelete: Cascade} ensures if user is deleted his comments,posts,student,courses all are removedrelationship with Post
   post_id    Int // Foreign key referencing Post
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one {onDelete: Cascade} ensures if user is deleted his comments,posts,student,courses all are removedrelationship with User
   user_id    Int // Foreign key referencing User
   comment    String // Text content of the comment
   created_at DateTime @default(now()) // Timestamp for creation, defaulting to current time
+}
+
+// Course model definition
+model Course {
+  id       Int       @id @default(autoincrement()) // Unique identifier, auto-incremented
+  title    String // Title of the post
+  students Student[]
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one {onDelete: Cascade} ensures if user is deleted his comments,posts,student,courses all are removed
+  user_id  Int // Foreign key referencing User
+}
+
+// Student model definition
+model Student {
+  id      Int      @id @default(autoincrement()) // Unique identifier, auto-incremented
+  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade) // Many-to-one {onDelete: Cascade} ensures if user is deleted his comments,posts,student,courses all are removed
+  user_id Int // Foreign key referencing User
+  courses Course[]
 }
